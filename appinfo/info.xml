@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>wfs_downloader</id>
+	<name>WFS Downloader</name>
+	<summary>Downloading data from Web Feature Service (WFS).</summary>
+	<description>This app enables the user to download different data from WFS by providing a URL.</description>
+	<version>1.0.0</version>
+	<licence>agpl</licence>
+	<author mail="cedric.fauth@nefino.de" homepage="">Cedric Fauth</author>
+	<namespace>WFSDownloader</namespace>
+	<category>tools</category>
+	<bugs>http://github.com/nefino/wfs_downloader/issues</bugs>
+	<dependencies>
+		<nextcloud min-version="31" max-version="31"/>
+	</dependencies>
+	<!-- <navigations>
+		<navigation>
+			<id>wfs_downloader</id>
+			<name>WFS Downloader</name>
+			<route>wfs_downloader.page.index</route>
+			<icon>app.svg</icon>
+			<type>link</type>
+		</navigation>
+	</navigations> -->
+</info>
