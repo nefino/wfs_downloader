@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import { generateUrl } from '@nextcloud/router'
 import {
 	NcButton,
 	NcIconSvgWrapper,
@@ -38,7 +39,6 @@ import {
 	NcTextField,
 } from '@nextcloud/vue'
 import WFSCapabilities from 'ol-wfs-capabilities'
-import { generateUrl } from '@nextcloud/router'
 
 import TransferSvg from '@mdi/svg/svg/cloud-upload.svg'
 
@@ -86,21 +86,15 @@ export default {
 		close() {
 			this.visible = false
 		},
-		loadExample(file) {
-			const xhttp = new XMLHttpRequest()
-			xhttp.open('GET', file, false)
-			xhttp.send()
-
-			const xml = xhttp.responseText
-			return xml
-		},
 		async submit() {
 			// eslint-disable-next-line no-console
 			// eslint-disable-next-line no-console
 			console.log(`Getting layers from ${this.url}`)
 			// this.close()
 
-			const backendUrl = generateUrl('/apps/wfsdownloader/capabilities') + '?url=' + encodeURIComponent(this.url)
+			const backendUrl = generateUrl('/ocs/v2.php/apps/wfs_downloader/capabilities') + '?format=json&url=' + encodeURIComponent(this.url + '?service=WFS&request=GetCapabilities')
+			// eslint-disable-next-line no-console
+			console.log(backendUrl)
 
 			try {
 				const response = await fetch(backendUrl)
@@ -108,22 +102,29 @@ export default {
 				if (!response.ok) {
 					throw new Error(`Server error: ${response.status}`)
 				}
-
-				const xmlText = await response.text()
+				const rawResp = await response.json()
 				// eslint-disable-next-line no-console
-				console.log('Capabilities:', xmlText)
-				// Optionally: parse XML, update state, etc.
+				console.log(rawResp)
+				// eslint-disable-next-line no-console, dot-notation
+				const xmlText = rawResp.ocs['data']
+				// parse xml
+				const xmlParser = new DOMParser()
+				const xmlDoc = xmlParser.parseFromString(xmlText, 'text/xml')
+				// eslint-disable-next-line no-console
+				console.log(xmlDoc.documentElement)
 
+				// eslint-disable-next-line no-console
+				// console.log('Capabilities:', xmlText)
+				// Optionally: parse XML, update state, etc.
+				// eslint-disable-next-line no-unused-vars
+				const parser = new WFSCapabilities()
+				const parsedCapabilities = parser.read(xmlDoc.documentElement)
+				// eslint-disable-next-line no-console
+				console.log(parsedCapabilities)
 			} catch (error) {
 				console.error('Error fetching capabilities:', error)
 			}
 
-			// eslint-disable-next-line no-unused-vars
-			const parser = new WFSCapabilities()
-			// const data = this.loadExample(`${this.url}?service=WFS&request=GetCapabilities`)
-			// const parsedCapabilities = parser.read(data)
-			// // eslint-disable-next-line no-console
-			// console.log(parsedCapabilities)
 		},
 	},
 }
