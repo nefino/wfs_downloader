@@ -15,11 +15,13 @@ use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 use Psr\Log\LoggerInterface;
+use OCP\Http\Client\IClientService;
 
 
 class WFSService {
 
 	public const GIF_DIR_NAME = 'gifs';
+    private IClientService $clientService;
 
 	/**
 	 * @var IRootFolder
@@ -31,8 +33,11 @@ class WFSService {
 	private $logger;
 
 	public function __construct (IRootFolder $root,
+                                IClientService $clientService,
 								LoggerInterface $logger) {
 		$this->root = $root;
+        $this->clientService = $clientService;
+
 		$this->logger = $logger;
 	}
 
@@ -44,30 +49,40 @@ class WFSService {
      * @return string|null
      */
     public function getCapabilitiesXML(string $url): ?string {
-        $context = stream_context_create([
-            'http' => [
+        $client = $this->clientService->newClient();
+
+        try {
+            $response = $client->get($url, [
                 'timeout' => 10,
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true,
-            ],
-        ]);
+                'verify' => true,
+            ]);
 
-        $content = @file_get_contents($url, false, $context);
+            $this->logger->info("Successfully downloaded capabilities XML from $url", ['app' => 'your_app_id']);
 
-        if ($content === false) {
-            $error = error_get_last();
+            return $response->getBody();
+        } catch (\Exception $e) {
             $this->logger->error("Failed to download XML from URL: $url", [
-                'app' => Application::APP_ID,
-                'error' => $error['message'] ?? 'unknown error'
+                'app' => 'your_app_id',
+                'error' => $e->getMessage()
             ]);
             return null;
         }
+    }
 
-        $this->logger->info("Successfully downloaded capabilities XML from $url", ['app' => Application::APP_ID]);
+    public function forwardLayerDownload(array $data) {
+        $client = $this->clientService->newClient();
 
-        return $content;
+        $response = $client->post('https://example.com/', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode($data),
+        ]);
+
+        // Decode the response body
+        $responseData = json_decode($response->getBody(), true);
+        return $responseData;
     }
 
 }

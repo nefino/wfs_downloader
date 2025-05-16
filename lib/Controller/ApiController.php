@@ -13,6 +13,9 @@ use OCA\WFSDownloader\Service\WFSService;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
 use OCP\IRequest;
+use OCP\AppFramework\Http\JSONResponse;
+use OCP\Http\Client\IClientService;
+
 
 /**
  * @psalm-suppress UnusedClass
@@ -22,7 +25,8 @@ class ApiController extends OCSController {
 	/**
 	 * @var WFSService
 	 */
-	private $wfsService;
+	private WFSService $wfsService;
+
 
 	public function __construct(string        $appName,
 								IRequest      $request,
@@ -66,6 +70,25 @@ class ApiController extends OCSController {
 		}
 
 		return new DataResponse('', Http::STATUS_NOT_FOUND);
+	}
+
+	#[NoAdminRequired]
+	#[NoCSRFRequired]
+	#[ApiRoute(verb: 'POST', url: '/download')]
+	public function download(string $url, array  $layers) {
+
+        // Retrieve JSON data from the request
+        $data = $this->request->getParams();
+
+        try {
+			$msg = $this->wfsService->forwardLayerDownload($data);
+            // Decode the response body
+            return new DataResponse($msg);
+        } catch (\Exception $e) {
+            // Handle exceptions and return error response
+            return new DataResponse(['error' => $e->getMessage()], 500);
+        }
+
 	}
 
 }
