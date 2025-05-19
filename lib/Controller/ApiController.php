@@ -37,24 +37,12 @@ class ApiController extends OCSController {
 	}
 
 
-
 	/**
-	 * An example API endpoint
+	 * API endpoint to fetch wfs capabilities (e.g. layers) because 
+	 * frontend requests are not allowed in nextcloud
 	 *
-	 * @return DataResponse<Http::STATUS_OK, array{message: string}, array{}>
-	 *
-	 * 200: Data returned
+	 * @return DataResponse
 	 */
-	#[NoAdminRequired]
-	#[NoCSRFRequired]
-	#[ApiRoute(verb: 'GET', url: '/api')]
-	public function index(): DataResponse {
-		return new DataResponse(
-			['message' => 'Hello world!']
-		);
-	}
-
-
 	#[NoAdminRequired]
 	#[NoCSRFRequired]
 	#[ApiRoute(verb: 'GET', url: '/capabilities')]
@@ -72,21 +60,33 @@ class ApiController extends OCSController {
 		return new DataResponse('', Http::STATUS_NOT_FOUND);
 	}
 
+	/**
+	 * API endpoint to download selected layers.
+	 * Post data is just forwarded to Django which handles downloading.
+	 *
+	 * @return DataResponse
+	 */
 	#[NoAdminRequired]
 	#[NoCSRFRequired]
 	#[ApiRoute(verb: 'POST', url: '/download')]
-	public function download(string $url, array  $layers) {
+	public function download(string $url, string $dir, array $layers) {
 
-        // Retrieve JSON data from the request
-        $data = $this->request->getParams();
+        // // Retrieve JSON data from the request
+        // $data = $this->request->getParams();
+
+		$postData = array(
+			"url" => $url,
+            "dir" => $dir,
+            "layers" => $layers,
+        );
 
         try {
-			$msg = $this->wfsService->forwardLayerDownload($data);
+			$msg = $this->wfsService->forwardLayerDownload($postData);
             // Decode the response body
-            return new DataResponse($msg);
+            return new JSONResponse($msg);
         } catch (\Exception $e) {
             // Handle exceptions and return error response
-            return new DataResponse(['error' => $e->getMessage()], 500);
+            return new JSONResponse(['error' => $e->getMessage()], 500);
         }
 
 	}

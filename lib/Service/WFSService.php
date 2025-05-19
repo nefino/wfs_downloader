@@ -20,8 +20,10 @@ use OCP\Http\Client\IClientService;
 
 class WFSService {
 
-	public const GIF_DIR_NAME = 'gifs';
     private IClientService $clientService;
+
+    private string $backendUrl;
+
 
 	/**
 	 * @var IRootFolder
@@ -39,6 +41,7 @@ class WFSService {
         $this->clientService = $clientService;
 
 		$this->logger = $logger;
+        $this->backendUrl = $_GET['DJANGO_URL'] ?? 'https://echo.free.beeceptor.com';
 	}
 
 
@@ -72,7 +75,7 @@ class WFSService {
     public function forwardLayerDownload(array $data) {
         $client = $this->clientService->newClient();
 
-        $response = $client->post('https://example.com/', [
+        $response = $client->post($this->backendUrl, [
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',

@@ -2,14 +2,14 @@ import Icon from '@mdi/svg/svg/download-network.svg'
 import '@nextcloud/dialogs/style.css'
 import { addNewFileMenuEntry } from '@nextcloud/files'
 import Vue from 'vue'
-import UrlInputModal from './components/UrlInputModal.vue'
+import WFSModalView from './components/WFSModalView.vue'
 
 const vueMountElement = document.createElement('div')
 document.body.append(vueMountElement)
 
 const vueMount = new Vue({
 	el: vueMountElement,
-	render: h => h(UrlInputModal),
+	render: h => h(WFSModalView),
 })
 
 addNewFileMenuEntry({
@@ -22,6 +22,11 @@ addNewFileMenuEntry({
 	// if: context => (context.permissions & Permission.CREATE) !== 0,
 
 	async handler(context, content) {
+		// eslint-disable-next-line no-console
+		console.log(context)
+		// eslint-disable-next-line no-console
+		console.log(content)
+
 		vueMount.$children[0].open(context)
 	},
 
