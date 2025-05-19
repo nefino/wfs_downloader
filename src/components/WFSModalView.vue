@@ -1,7 +1,7 @@
 <template>
-	<NcModal v-if="visible" name="Layer über Web Feature Service herunterladen" @close="close">
+	<NcModal v-if="visible" name="Layer über WFS herunterladen" @close="close">
 		<h2 v-if="!showCapabilities">
-			Layer über Web Feature Service herunterladen
+			Layer über WFS herunterladen
 		</h2>
 		<h2 v-else>
 			Layer Auswahl
