@@ -1,16 +1,15 @@
 # WFS Downloader
 
-A template to get started with Nextcloud app development.
+Nextcloud app to send download request for WFS Layers.
+
+<p align="center">
+  <img src="img/wfs0.png" alt="Image 1" width="30%" />
+  <img src="img/wfs1.png" alt="Image 2" width="30%" />
+</p>
 
 ## Usage
 
-- To get started easily use the [Appstore App generator](https://apps.nextcloud.com/developer/apps/generate) to
-  dynamically generate an App based on this repository with all the constants prefilled.
-- Alternatively you can use the "Use this template" button on the top of this page to create a new repository based on
-  this repository. Afterwards adjust all the necessary constants like App ID, namespace, descriptions etc.
-
-Once your app is ready follow the [instructions](https://nextcloudappstore.readthedocs.io/en/latest/developer.html) to
-upload it to the Appstore.
+TODO
 
 ## Resources
 
