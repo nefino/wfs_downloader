@@ -17,6 +17,8 @@
     "extends @nextcloud/browserslist-config"
   ],
   "dependencies": {
+    "@loaders.gl/core": "^4.3.3",
+    "@loaders.gl/wms": "^4.3.3",
     "@mdi/svg": "^7.4.47",
     "@nextcloud/dialogs": "^6.3.0",
     "@nextcloud/files": "^3.10.2",
@@ -24,7 +26,6 @@
     "@nextcloud/vue": "^8.11.2",
     "install": "^0.13.0",
     "npm": "^11.3.0",
-    "ol-wfs-capabilities": "^2.0.0",
     "vue": "^2.7.16"
   },
   "devDependencies": {

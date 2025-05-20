@@ -22,11 +22,6 @@ addNewFileMenuEntry({
 	// if: context => (context.permissions & Permission.CREATE) !== 0,
 
 	async handler(context, content) {
-		// eslint-disable-next-line no-console
-		console.log(context)
-		// eslint-disable-next-line no-console
-		console.log(content)
-
 		vueMount.$children[0].open(context)
 	},
 

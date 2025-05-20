@@ -41,11 +41,10 @@
 				</NcNoteCard>
 
 				<div class="scrollable-list">
-					<div v-for="(layer, index) in layerView.layerNames" :key="index" class="checkbox-container">
-						<NcCheckboxRadioSwitch v-model="layerView.layerStatesMap[layer]" type="checkbox">
-							{{ layer }}
-						</NcCheckboxRadioSwitch>
-					</div>
+					<LayerList
+						:topics="layerTopics"
+						:layer-states="layerView.layerStatesMap"
+						@update:layer-states="layerView.layerStatesMap = $event" />
 				</div>
 
 				<NcNoteCard v-if="layerView.downloadMessage" :type="layerView.noteType">
@@ -69,18 +68,19 @@
 </template>
 
 <script>
+import { parse } from '@loaders.gl/core'
+import { _WFSCapabilitiesLoader } from '@loaders.gl/wms'
+import LayerList from './LayerList.vue'
 import Icon from '@mdi/svg/svg/download-network.svg'
 import LayersIcon from '@mdi/svg/svg/layers-search.svg'
 import { generateUrl } from '@nextcloud/router'
 import {
 	NcButton,
-	NcCheckboxRadioSwitch,
 	NcIconSvgWrapper,
 	NcModal,
 	NcNoteCard,
 	NcTextField,
 } from '@nextcloud/vue'
-import WFSCapabilities from 'ol-wfs-capabilities'
 
 function initialLinkView() {
 	return {
@@ -96,6 +96,7 @@ function initialLayerView() {
 		isDownloading: false,
 		downloadMessage: '',
 		noteType: 'error',
+		parsedCapabilities: null,
 	}
 }
 
@@ -106,7 +107,7 @@ export default {
 		NcModal,
 		NcNoteCard,
 		NcTextField,
-		NcCheckboxRadioSwitch,
+		LayerList,
 	},
 
 	data() {
@@ -117,6 +118,7 @@ export default {
 			showCapabilities: false,
 			linkView: initialLinkView(),
 			layerView: initialLayerView(),
+			layerTopics: null,
 		}
 	},
 
@@ -136,14 +138,8 @@ export default {
 			this.linkView = initialLinkView()
 			this.layerView = initialLayerView()
 		},
-
-		async submit() {
-			this.linkView.submitError = ''
-			this.layerView.downloadMessage = ''
-			// eslint-disable-next-line no-console
-			console.log(`Getting layers from: ${this.linkView.url}`)
-
-			const apiUrl = generateUrl('/ocs/v2.php/apps/wfs_downloader/capabilities')
+		async getWfsCapabilities(url) {
+			const apiUrl = generateUrl('/ocs/v2.php/apps/wfs_downloader/proxy')
 			const wfsUrl = encodeURIComponent(
 				`${this.linkView.url}?service=WFS&request=GetCapabilities`,
 			)
@@ -151,34 +147,44 @@ export default {
 			// eslint-disable-next-line no-console
 			console.log(`Calling backend: ${backendUrl}`)
 
+			const response = await fetch(backendUrl)
+
+			if (!response.ok) {
+				throw new Error(`Server error: ${response.status}\n${response}`)
+			}
+			const rawResp = await response.json()
+			const xmlText = rawResp.ocs.data
+			return await parse(xmlText, _WFSCapabilitiesLoader)
+		},
+		async describeWfsFeatureType(url, version) {
+			// Not implemented, because there is no lib that currently supports describing features for frontend
+			return null
+		},
+		async submit() {
+			this.linkView.submitError = ''
+			this.layerView.downloadMessage = ''
+			// eslint-disable-next-line no-console
+			console.log(`Getting layers from: ${this.linkView.url}`)
 			try {
-				const response = await fetch(backendUrl)
-
-				if (!response.ok) {
-					throw new Error(`Server error: ${response.status}`)
-				}
-				const rawResp = await response.json()
+				this.layerView.parsedCapabilities = await this.getWfsCapabilities(this.linkView.url)
 				// eslint-disable-next-line no-console
-				console.log(rawResp)
-				const xmlText = rawResp.ocs.data
-				const xmlParser = new DOMParser()
-				const xmlDoc = xmlParser.parseFromString(xmlText, 'text/xml')
-
-				const parser = new WFSCapabilities()
-				const parsedCapabilities = parser.read(xmlDoc.documentElement)
-				this.layerView.layerNames = parsedCapabilities.FeatureTypeList.map(
-					ft => ft.Name,
+				console.log(this.layerView.parsedCapabilities.wFS_Capabilities.featureTypeList.featureType)
+				this.layerView.layerNames = this.layerView.parsedCapabilities.wFS_Capabilities.featureTypeList.featureType.map(
+					ft => ft.name,
 				)
 				this.layerView.layerStatesMap = Object.fromEntries(
 					this.layerView.layerNames.map(name => [name, false]),
 				)
-				this.showCapabilities = true
+				this.layerTopics = this.layerView.parsedCapabilities.wFS_Capabilities.featureTypeList.featureType
+				// eslint-disable-next-line no-console
+				console.log(this.layerView.parsedCapabilities.wFS_Capabilities)
+
 			} catch (error) {
 				console.error('Error fetching capabilities:', error)
 				this.linkView.submitError = 'Fehler beim Abrufen der Layer. Bitte überprüfen Sie den Link.'
-			} finally {
-				this.layerView.isDownloading = false
 			}
+			this.layerView.isDownloading = false
+			this.showCapabilities = true
 		},
 
 		async download() {
