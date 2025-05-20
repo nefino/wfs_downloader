@@ -38,18 +38,18 @@ class ApiController extends OCSController {
 
 
 	/**
-	 * API endpoint to fetch wfs capabilities (e.g. layers) because 
-	 * frontend requests are not allowed in nextcloud
+	 * GET request proxy to do web requests from the frontend by calling this route
+	 * with a provided url parameter
 	 *
 	 * @return DataResponse
 	 */
 	#[NoAdminRequired]
 	#[NoCSRFRequired]
-	#[ApiRoute(verb: 'GET', url: '/capabilities')]
-	public function getCapabilities() {
+	#[ApiRoute(verb: 'GET', url: '/proxy')]
+	public function proxy() {
         $url = $this->request->getParam('url');
 
-		$xmlContent = $this->wfsService->getCapabilitiesXML($url);
+		$xmlContent = $this->wfsService->getRequestProxy($url);
 		if ($xmlContent !== null) {
 			$response = new DataResponse($xmlContent);
 			// $response->cacheFor(60 * 60);

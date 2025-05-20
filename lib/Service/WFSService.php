@@ -51,7 +51,7 @@ class WFSService {
      * @param string $url
      * @return string|null
      */
-    public function getCapabilitiesXML(string $url): ?string {
+    public function getRequestProxy(string $url): ?string {
         $client = $this->clientService->newClient();
 
         try {
@@ -60,11 +60,9 @@ class WFSService {
                 'verify' => true,
             ]);
 
-            $this->logger->info("Successfully downloaded capabilities XML from $url", ['app' => 'your_app_id']);
-
             return $response->getBody();
         } catch (\Exception $e) {
-            $this->logger->error("Failed to download XML from URL: $url", [
+            $this->logger->error("Failed to download content from URL: $url", [
                 'app' => 'your_app_id',
                 'error' => $e->getMessage()
             ]);
