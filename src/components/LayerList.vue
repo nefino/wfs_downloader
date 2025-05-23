@@ -96,7 +96,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background-color: #f8f8f8;
 }
 
 /* The whole area around checkbox + label is clickable */
@@ -122,7 +121,6 @@ export default {
 
 .accordion-body {
   padding: 0.5rem 1rem;
-  background-color: #fafafa;
   border-top: 1px solid #ccc;
   white-space: pre-wrap;
 }
