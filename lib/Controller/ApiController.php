@@ -48,17 +48,21 @@ class ApiController extends OCSController {
 	#[ApiRoute(verb: 'GET', url: '/proxy')]
 	public function proxy() {
         $url = $this->request->getParam('url');
-
-		$xmlContent = $this->wfsService->getRequestProxy($url);
-		if ($xmlContent !== null) {
-			$response = new DataResponse($xmlContent);
-			// $response->cacheFor(60 * 60);
-			$response->cacheFor(0);
-			return $response;
-		}
-
-		return new DataResponse('', Http::STATUS_NOT_FOUND);
-	}
+        try {
+            $xmlContent = $this->wfsService->getRequestProxy($url);
+            if ($xmlContent !== null) {
+                $response = new DataResponse($xmlContent);
+                $response->cacheFor(0);
+                return $response;
+            }
+            return new JSONResponse(['error' => 'Failed to download content from URL'], 404);
+        } catch (\Exception $e) {
+            return new JSONResponse([
+                'error' => 'Exception occurred while downloading content',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 	/**
 	 * API endpoint to download selected layers.
@@ -70,25 +74,24 @@ class ApiController extends OCSController {
 	#[NoCSRFRequired]
 	#[ApiRoute(verb: 'POST', url: '/download')]
 	public function download(string $url, string $dir, array $layers) {
-
-        // // Retrieve JSON data from the request
-        // $data = $this->request->getParams();
-
-		$postData = array(
-			"url" => $url,
-            "dir" => $dir,
-            "layers" => $layers,
+        $postData = array(
+            'wfs_url' => $url,
+            'location' => $dir,
+            'layers' => $layers,
         );
 
         try {
-			$msg = $this->wfsService->forwardLayerDownload($postData);
-            // Decode the response body
-            return new JSONResponse($msg);
+            $body = $this->wfsService->postRequestProxy('/wfs-download/', $postData);
+            if ($body !== null) {
+                return new JSONResponse($body);
+            }
+            return new JSONResponse(['error' => 'Failed to post data to backend'], 500);
         } catch (\Exception $e) {
-            // Handle exceptions and return error response
-            return new JSONResponse(['error' => $e->getMessage()], 500);
+            return new JSONResponse([
+                'error' => 'Exception occurred while posting data to backend',
+                'message' => $e->getMessage(),
+            ], 500);
         }
-
-	}
+    }
 
 }

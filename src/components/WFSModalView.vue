@@ -25,7 +25,7 @@
 				<div class="buttons">
 					<NcButton type="primary"
 						native-type="submit"
-						:disabled="!isValid"
+						:disabled="!isValid || linkView.isSubmitting"
 						@click="submit">
 						<template #icon>
 							<NcIconSvgWrapper :svg="LayersIcon" />
@@ -86,6 +86,7 @@ function initialLinkView() {
 	return {
 		url: '',
 		submitError: '',
+		isSubmitting: false,
 	}
 }
 
@@ -150,7 +151,9 @@ export default {
 			const response = await fetch(backendUrl)
 
 			if (!response.ok) {
-				throw new Error(`Server error: ${response.status}\n${response}`)
+				const errorText = await response.text()
+				console.error('API error response:', errorText)
+				throw new Error(`Server error: ${response.status}\n${errorText}`)
 			}
 			const rawResp = await response.json()
 			const xmlText = rawResp.ocs.data
@@ -163,6 +166,7 @@ export default {
 		async submit() {
 			this.linkView.submitError = ''
 			this.layerView.downloadMessage = ''
+			this.linkView.isSubmitting = true
 			// eslint-disable-next-line no-console
 			console.log(`Getting layers from: ${this.linkView.url}`)
 			try {
@@ -178,13 +182,18 @@ export default {
 				this.layerTopics = this.layerView.parsedCapabilities.wFS_Capabilities.featureTypeList.featureType
 				// eslint-disable-next-line no-console
 				console.log(this.layerView.parsedCapabilities.wFS_Capabilities)
-
+				this.showCapabilities = true
+				this.layerView.isDownloading = false
 			} catch (error) {
 				console.error('Error fetching capabilities:', error)
 				this.linkView.submitError = 'Fehler beim Abrufen der Layer. Bitte überprüfen Sie den Link.'
+				if (error && error.message) {
+					console.error('API error (submit):', error.message)
+					this.linkView.submitError += `\n[API response]: ${error.message}`
+				}
+			} finally {
+				this.linkView.isSubmitting = false
 			}
-			this.layerView.isDownloading = false
-			this.showCapabilities = true
 		},
 
 		async download() {
@@ -223,7 +232,9 @@ export default {
 				})
 
 				if (!response.ok) {
-					throw new Error(`Server error: ${response.status}`)
+					const errorText = await response.text()
+					console.error('API error response (download):', errorText)
+					throw new Error(`Server error: ${response.status}\n${errorText}`)
 				}
 
 				const json = await response.json()
@@ -233,6 +244,10 @@ export default {
 			} catch (error) {
 				console.error('Download error:', error)
 				this.layerView.downloadMessage = 'Ein Fehler ist aufgetreten beim Herunterladen.'
+				if (error && error.message) {
+					console.error('API error (download):', error.message)
+					this.layerView.downloadMessage += `\n[API response]: ${error.message}`
+				}
 			}
 		},
 	},

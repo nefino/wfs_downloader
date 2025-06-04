@@ -41,7 +41,7 @@ class WFSService {
         $this->clientService = $clientService;
 
 		$this->logger = $logger;
-        $this->backendUrl = $_GET['DJANGO_URL'] ?? 'https://echo.free.beeceptor.com';
+        $this->backendUrl = getenv('DJANGO_URL') ?: 'https://echo.free.beeceptor.com';
 	}
 
 
@@ -63,27 +63,36 @@ class WFSService {
             return $response->getBody();
         } catch (\Exception $e) {
             $this->logger->error("Failed to download content from URL: $url", [
-                'app' => 'your_app_id',
                 'error' => $e->getMessage()
             ]);
-            return null;
+            throw $e;
         }
     }
 
-    public function forwardLayerDownload(array $data) {
+    public function postRequestProxy(string $path, array $data) {
         $client = $this->clientService->newClient();
 
-        $response = $client->post($this->backendUrl, [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($data),
-        ]);
+        try {
+            $response = $client->post($this->backendUrl . $path, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => json_encode($data),
+            ]);
 
-        // Decode the response body
-        $responseData = json_decode($response->getBody(), true);
-        return $responseData;
+            // Decode the response body
+            $responseData = $response->getBody();
+            return $responseData;
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to post data to backend', [
+                'path' => $path,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'backendUrl' => $this->backendUrl . $path,
+            ]);
+            throw $e;
+        }
     }
 
 }
