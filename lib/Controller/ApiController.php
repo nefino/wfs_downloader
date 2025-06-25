@@ -7,7 +7,6 @@ namespace OCA\WFSDownloader\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\ApiRoute;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
-use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCA\WFSDownloader\Service\WFSService;
 
 use OCP\AppFramework\Http\DataResponse;
@@ -44,7 +43,6 @@ class ApiController extends OCSController {
 	 * @return DataResponse
 	 */
 	#[NoAdminRequired]
-	#[NoCSRFRequired]
 	#[ApiRoute(verb: 'GET', url: '/proxy')]
 	public function proxy() {
         $url = $this->request->getParam('url');
@@ -71,7 +69,6 @@ class ApiController extends OCSController {
 	 * @return DataResponse
 	 */
 	#[NoAdminRequired]
-	#[NoCSRFRequired]
 	#[ApiRoute(verb: 'POST', url: '/download')]
 	public function download(string $url, string $dir, array $layers) {
         $postData = array(

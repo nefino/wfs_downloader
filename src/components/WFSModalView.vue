@@ -70,10 +70,12 @@
 <script>
 import { parse } from '@loaders.gl/core'
 import { _WFSCapabilitiesLoader } from '@loaders.gl/wms'
-import LayerList from './LayerList.vue'
 import Icon from '@mdi/svg/svg/download-network.svg'
 import LayersIcon from '@mdi/svg/svg/layers-search.svg'
+// eslint-disable-next-line n/no-extraneous-import
+import { getRequestToken } from '@nextcloud/auth'
 import { generateUrl } from '@nextcloud/router'
+
 import {
 	NcButton,
 	NcIconSvgWrapper,
@@ -81,6 +83,7 @@ import {
 	NcNoteCard,
 	NcTextField,
 } from '@nextcloud/vue'
+import LayerList from './LayerList.vue'
 
 function initialLinkView() {
 	return {
@@ -148,7 +151,14 @@ export default {
 			// eslint-disable-next-line no-console
 			console.log(`Calling backend: ${backendUrl}`)
 
-			const response = await fetch(backendUrl)
+			const response = await fetch(backendUrl, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+					requesttoken: getRequestToken(),
+				},
+			})
 
 			if (!response.ok) {
 				const errorText = await response.text()
@@ -221,6 +231,7 @@ export default {
 					headers: {
 						'Content-Type': 'application/json',
 						Accept: 'application/json',
+						requesttoken: getRequestToken(),
 					},
 					body: JSON.stringify({
 						url: this.linkView.url,
