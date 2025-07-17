@@ -7,7 +7,7 @@
 	<description>This app enables the user to download different data from WFS by providing a URL.</description>
 	<version>1.0.0</version>
 	<licence>agpl</licence>
-	<author mail="cedric.fauth@nefino.de" homepage="">Cedric Fauth</author>
+	<author mail="cedric.fauth@nefino.de" homepage="https://github.com/nefino/wfs_downloader">Cedric Fauth</author>
 	<namespace>WFSDownloader</namespace>
 	<category>tools</category>
 	<bugs>http://github.com/nefino/wfs_downloader/issues</bugs>
