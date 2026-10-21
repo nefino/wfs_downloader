@@ -5,14 +5,14 @@
 	<name>WFS Downloader</name>
 	<summary>Downloading data from Web Feature Service (WFS).</summary>
 	<description>This app enables the user to download different data from WFS by providing a URL.</description>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<licence>agpl</licence>
 	<author mail="cedric.fauth@nefino.de" homepage="https://github.com/nefino/wfs_downloader">Cedric Fauth</author>
 	<namespace>WFSDownloader</namespace>
 	<category>tools</category>
 	<bugs>http://github.com/nefino/wfs_downloader/issues</bugs>
 	<dependencies>
-		<nextcloud min-version="31" max-version="31"/>
+		<nextcloud min-version="31" max-version="35"/>
 	</dependencies>
 	<!-- <navigations>
 		<navigation>
