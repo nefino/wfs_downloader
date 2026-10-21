@@ -10,6 +10,6 @@ use OCP\Util;
 
 class LoadAdditionalScriptsListener implements IEventListener {
 	public function handle(Event $event): void {
-		Util::addInitScript("wfs_downloader", "main");
+		Util::addInitScript('wfs_downloader', 'main');
 	}
 }
